@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NotaEgreso MI v3 — Medicina Interna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1220;--surf:#111827;--bord:rgba(99,179,237,0.13);--bord2:rgba(99,179,237,0.32);--acc:#63b3ed;--acc2:#4299e1;--txt:#e2e8f0;--mut:#718096;--lbl:#90cdf4;--dan:#fc8181;--suc:#68d391;--warn:#f6ad55;--fui:'DM Sans',sans-serif;--fmono:'JetBrains Mono',monospace;--r:8px;--rl:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);min-height:100vh;font-family:var(--fui);color:var(--txt);}
+.hdr{background:linear-gradient(90deg,#0d1b2e,#112240);border-bottom:1px solid var(--bord);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.hbrand{display:flex;align-items:center;gap:12px;}
+.hico{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1a4a8a,#0a2d6e);border:1px solid rgba(99,179,237,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.htitle{font-family:'DM Serif Display',serif;font-size:18px;color:#e2e8f0;}
+.hsub{font-size:10px;color:var(--mut);letter-spacing:.14em;text-transform:uppercase;margin-top:1px;}
+.tabs{display:flex;gap:4px;}
+.tbtn{padding:7px 18px;border-radius:var(--r);border:1px solid transparent;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;font-family:var(--fui);transition:all .18s;background:transparent;color:var(--mut);}
+.tbtn.on{background:rgba(99,179,237,.12);border-color:rgba(99,179,237,.3);color:var(--acc);}
+.tbtn:hover:not(.on){background:rgba(255,255,255,.04);color:var(--txt);}
+.main{max-width:920px;margin:0 auto;padding:28px 20px 60px;}
+.prog-wrap{margin-bottom:28px;}.prog-row{display:flex;}
+.ps{flex:1;position:relative;}
+.pd{width:28px;height:28px;border-radius:50%;border:2px solid var(--bord);background:var(--surf);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--mut);margin:0 auto;transition:all .25s;cursor:pointer;position:relative;z-index:2;}
+.pd.done{background:rgba(99,179,237,.2);border-color:var(--acc);color:var(--acc);}
+.pd.cur{background:var(--acc2);border-color:var(--acc);color:#fff;box-shadow:0 0 0 4px rgba(99,179,237,.15);}
+.pl-lbl{font-size:9px;color:var(--mut);text-align:center;margin-top:5px;letter-spacing:.06em;text-transform:uppercase;}
+.pline{position:absolute;top:14px;left:50%;right:-50%;height:2px;background:var(--bord);z-index:1;}
+.pline.done{background:var(--acc2);}
+.ps:last-child .pline{display:none;}
+.card{background:var(--surf);border:1px solid var(--bord);border-radius:var(--rl);padding:22px 24px;margin-bottom:18px;animation:fu .25s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--bord);}
+.cnum{font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--acc);font-family:var(--fmono);background:rgba(99,179,237,.1);padding:3px 8px;border-radius:4px;}
+.ctit{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--lbl);}
+.cico{font-size:16px;margin-left:auto;opacity:.5;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fld{margin-bottom:4px;}
+.flbl{display:block;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--lbl);margin-bottom:6px;}
+.fi,.fta,.fsel{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bord);border-radius:var(--r);padding:9px 13px;color:var(--txt);font-size:13px;font-family:var(--fui);outline:none;transition:border-color .18s;}
+.fi:focus,.fta:focus,.fsel:focus{border-color:var(--acc);background:rgba(99,179,237,.04);}
+.fta{resize:vertical;line-height:1.6;}
+.fi::placeholder,.fta::placeholder{color:rgba(113,128,150,.5);}
+.fsel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2363b3ed' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.alert{border-radius:var(--r);padding:10px 14px;font-size:12px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start;}
+.aw{background:rgba(246,173,85,.08);border:1px solid rgba(246,173,85,.2);color:#f6ad55;}
+.ai{background:rgba(99,179,237,.07);border:1px solid rgba(99,179,237,.18);color:#90cdf4;}
+.as{background:rgba(104,211,145,.07);border:1px solid rgba(104,211,145,.2);color:#68d391;}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px;gap:12px;}
+.btn{padding:11px 24px;border-radius:var(--r);border:1px solid;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:var(--fui);transition:all .18s;}
+.bg{background:transparent;border-color:var(--bord);color:var(--mut);}
+.bg:hover{border-color:var(--bord2);color:var(--txt);background:rgba(255,255,255,.03);}
+.bp{background:linear-gradient(135deg,#1a4a8a,#0a2d6e);border-color:rgba(99,179,237,.4);color:#e2eaf5;box-shadow:0 3px 14px rgba(30,80,180,.25);}
+.bp:hover{background:linear-gradient(135deg,#1f5aa0,#0d3a8a);}
+.bgen{width:100%;padding:15px;font-size:13px;letter-spacing:.14em;background:linear-gradient(135deg,#1a4a8a,#0a2d6e);border:1px solid rgba(99,179,237,.45);color:#e2eaf5;border-radius:var(--rl);cursor:pointer;font-family:var(--fui);font-weight:700;transition:all .2s;box-shadow:0 4px 20px rgba(10,45,110,.4);margin-top:10px;}
+.bgen:hover{box-shadow:0 6px 28px rgba(10,45,110,.55);transform:translateY(-1px);}
+.bgen:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.lab-col-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.lab-section-label{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--lbl);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.lab-paste-area{width:100%;min-height:160px;background:rgba(0,0,0,.2);border:1px dashed rgba(99,179,237,.25);border-radius:var(--r);padding:13px 14px;color:var(--txt);font-size:13px;font-family:var(--fmono);outline:none;transition:border-color .18s;resize:vertical;line-height:1.7;}
+.lab-paste-area:focus{border-color:var(--acc);border-style:solid;background:rgba(99,179,237,.03);}
+.lab-paste-area::placeholder{color:rgba(113,128,150,.4);font-family:var(--fui);font-size:12px;font-style:italic;}
+.btn-parse{display:flex;align-items:center;gap:7px;padding:8px 16px;background:rgba(104,211,145,.08);border:1px solid rgba(104,211,145,.22);border-radius:var(--r);color:var(--suc);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--fui);transition:all .18s;letter-spacing:.08em;text-transform:uppercase;margin-top:10px;}
+.btn-parse:hover{background:rgba(104,211,145,.15);}
+.btn-parse:disabled{opacity:.4;cursor:not-allowed;}
+.parse-spin{animation:rot 1s linear infinite;display:inline-block;}
+.lab-preview{margin-top:16px;}
+.lab-preview-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--suc);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.preview-tbl{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--fmono);}
+.preview-tbl th{background:rgba(99,179,237,.1);color:var(--acc);padding:6px 10px;text-align:left;border-bottom:1px solid var(--bord);font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
+.preview-tbl td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--txt);font-size:12px;}
+.preview-tbl tr:last-child td{border-bottom:none;}
+.day-timeline{display:flex;flex-direction:column;gap:0;}
+.day-entry{display:flex;gap:0;position:relative;}
+.day-left{display:flex;flex-direction:column;align-items:center;width:52px;flex-shrink:0;}
+.day-dot{width:32px;height:32px;border-radius:50%;background:rgba(99,179,237,.15);border:2px solid rgba(99,179,237,.35);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--acc);font-family:var(--fmono);flex-shrink:0;margin-top:2px;}
+.day-line-v{width:2px;background:rgba(99,179,237,.12);flex:1;min-height:12px;margin-top:4px;}
+.day-entry:last-child .day-line-v{display:none;}
+.day-right{flex:1;padding-bottom:20px;}
+.day-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+.day-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);font-family:var(--fmono);}
+.day-date-in{background:rgba(255,255,255,.04);border:1px solid var(--bord);border-radius:var(--r);padding:5px 10px;color:var(--txt);font-size:12px;font-family:var(--fmono);outline:none;width:140px;transition:border-color .18s;}
+.day-date-in:focus{border-color:var(--acc);}
+.day-textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bord);border-radius:var(--r);padding:9px 13px;color:var(--txt);font-size:13px;font-family:var(--fui);outline:none;transition:border-color .18s;resize:vertical;line-height:1.6;}
+.day-textarea:focus{border-color:var(--acc);}
+.day-textarea::placeholder{color:rgba(113,128,150,.45);}
+.day-del{width:24px;height:24px;border-radius:50%;background:rgba(252,129,129,.08);border:1px solid rgba(252,129,129,.2);color:var(--dan);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-left:auto;flex-shrink:0;}
+.day-del:hover{background:rgba(252,129,129,.18);}
+.btn-addday{display:flex;align-items:center;gap:8px;padding:9px 16px;background:rgba(99,179,237,.07);border:1px dashed rgba(99,179,237,.25);border-radius:var(--r);color:var(--acc);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fui);transition:all .18s;letter-spacing:.06em;margin-top:6px;}
+.btn-addday:hover{background:rgba(99,179,237,.13);}
+.day-status-sel{background:rgba(255,255,255,.04);border:1px solid var(--bord);border-radius:var(--r);padding:5px 10px;color:var(--txt);font-size:11px;font-family:var(--fui);outline:none;appearance:none;cursor:pointer;transition:all .18s;}
+.owrap{background:var(--surf);border:1px solid var(--bord);border-radius:var(--rl);padding:28px 30px;animation:fu .3s ease;}
+.otoolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--bord);}
+.otag{font-size:10px;color:var(--mut);letter-spacing:.12em;text-transform:uppercase;}
+.bcopy{padding:6px 16px;background:rgba(99,179,237,.08);border:1px solid rgba(99,179,237,.22);color:var(--acc);border-radius:var(--r);font-size:11px;font-weight:600;letter-spacing:.08em;cursor:pointer;font-family:var(--fui);transition:all .15s;}
+.bcopy:hover{background:rgba(99,179,237,.14);}
+.ocont{color:#c5d8ef;font-size:13px;line-height:1.75;font-family:var(--fmono);}
+.ocont h2{font-size:13px;font-weight:600;color:var(--acc);letter-spacing:.1em;text-transform:uppercase;margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--bord);font-family:var(--fui);}
+.ocont h3{font-size:12px;font-weight:600;color:#a8c8ff;margin:14px 0 5px;font-family:var(--fui);}
+.ocont h4{font-size:12px;font-weight:600;color:var(--warn);margin:12px 0 4px;font-family:var(--fui);}
+.ocont strong{color:#fff;}
+.ocont table{border-collapse:collapse;width:100%;margin:10px 0;font-size:12px;}
+.ocont th{background:rgba(99,179,237,.1);color:var(--acc);padding:6px 12px;text-align:left;border-bottom:1px solid var(--bord);}
+.ocont td{padding:5px 12px;border-bottom:1px solid rgba(255,255,255,.05);}
+.ocont li{margin-left:18px;margin-bottom:3px;}
+.ocont .dia-blk{border-left:2px solid rgba(99,179,237,.3);padding-left:14px;margin:8px 0;}
+.spin{text-align:center;padding:70px 0;}
+.spin-ico{font-size:36px;display:block;animation:rot 2s linear infinite;margin:0 auto 16px;}
+@keyframes rot{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.spin-txt{font-size:13px;color:var(--mut);letter-spacing:.08em;}
+.empty{text-align:center;padding:80px 0;}
+.eico{font-size:42px;opacity:.2;margin-bottom:14px;}
+.etxt{font-size:13px;color:var(--mut);}
+.peea-badge{display:inline-block;background:rgba(104,211,145,.1);border:1px solid rgba(104,211,145,.25);color:#68d391;font-size:10px;font-weight:700;letter-spacing:.12em;padding:3px 9px;border-radius:4px;margin-left:8px;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(99,179,237,.2);border-radius:4px;}
+@media(max-width:640px){.g2,.lab-col-wrap{grid-template-columns:1fr;}.day-header{flex-direction:column;align-items:flex-start;}.day-date-in{width:100%;}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hbrand">
+    <div class="hico">⚕</div>
+    <div>
+      <div class="htitle">NotaEgreso MI</div>
+      <div class="hsub">Medicina Interna · v3</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tbtn on" onclick="showTab('form')" id="tab-form">Formulario</button>
+    <button class="tbtn" onclick="showTab('output')" id="tab-out">Nota Clínica</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="prog-wrap" id="prog-sec"><div class="prog-row" id="prog-row"></div></div>
+
+  <div id="vform">
+
+    <!-- PASO 1: Identificación -->
+    <div class="step-page" id="s0">
+      <div class="card">
+        <div class="ch"><span class="cnum">01</span><span class="ctit">Identificación del Paciente</span><span class="cico">🪪</span></div>
+        <div class="g2">
+          <div class="fld"><label class="flbl">Nombre Completo</label><input class="fi" id="nombre" placeholder="Apellido Paterno Materno, Nombre(s)"></div>
+          <div class="fld"><label class="flbl">No. Expediente</label><input class="fi" id="exp" placeholder="Opcional"></div>
+          <div class="fld"><label class="flbl">Edad</label><input class="fi" id="edad" placeholder="Ej. 58 años"></div>
+          <div class="fld"><label class="flbl">Sexo</label>
+            <select class="fsel fi" id="sexo">
+              <option value="">— Seleccionar —</option>
+              <option>Masculino</option><option>Femenino</option>
+            </select>
+          </div>
+          <div class="fld"><label class="flbl">Fecha de Ingreso</label><input class="fi" id="fing" type="date"></div>
+          <div class="fld"><label class="flbl">Fecha de Egreso</label><input class="fi" id="feg" type="date"></div>
+          <div class="fld"><label class="flbl">Médico Tratante</label><input class="fi" id="medico" placeholder="Dr./Dra. Nombre Apellido"></div>
+          <div class="fld"><label class="flbl">Cédula Profesional</label><input class="fi" id="cedula" placeholder="No. cédula"></div>
+        </div>
+        <div style="margin-top:14px">
+          <label class="flbl">Servicio / Sala</label>
+          <input class="fi" id="servicio" placeholder="Ej. Medicina Interna – Cama 12, Piso 3">
+        </div>
+      </div>
+      <div class="nav"><div></div><button class="btn bp" onclick="go(1)">Siguiente →</button></div>
+    </div>
+
+    <!-- PASO 2: Diagnósticos -->
+    <div class="step-page" id="s1" style="display:none">
+      <div class="card">
+        <div class="ch"><span class="cnum">02</span><span class="ctit">Diagnósticos</span><span class="cico">🔬</span></div>
+        <div class="fld" style="margin-bottom:14px">
+          <label class="flbl">Diagnóstico Principal (CIE-10 si aplica)</label>
+          <input class="fi" id="dxp" placeholder="Ej. Insuficiencia cardiaca aguda descompensada FE reducida (I50.0)">
+        </div>
+        <div class="fld">
+          <label class="flbl">Diagnósticos Secundarios / Comorbilidades</label>
+          <textarea class="fta" id="dxs" rows="4" placeholder="Ej. DM2 descontrolada (E11.9)&#10;HAS estadio II (I10)&#10;ERC estadio 3b (N18.3)&#10;Fibrilación auricular paroxística (I48.0)"></textarea>
+        </div>
+        <div class="fld" style="margin-top:14px">
+          <label class="flbl">Motivo de Ingreso</label>
+          <textarea class="fta" id="motivo" rows="3" placeholder="Síntoma(s) principal(es), tiempo de evolución y contexto clínico de ingreso…"></textarea>
+        </div>
+      </div>
+      <div class="nav"><button class="btn bg" onclick="go(0)">← Anterior</button><button class="btn bp" onclick="go(2)">Siguiente →</button></div>
+    </div>
+
+    <!-- PASO 3: Evolución día por día -->
+    <div class="step-page" id="s2" style="display:none">
+      <div class="card">
+        <div class="ch"><span class="cnum">03</span><span class="ctit">Evolución Intrahospitalaria — Día por Día</span><span class="cico">📅</span></div>
+        <div class="ai alert" style="margin-bottom:18px">
+          <span style="font-size:14px">📋</span>
+          <span>Registra cada día de hospitalización: estado clínico, signos vitales relevantes, cambios de tratamiento, respuesta terapéutica y plan del día.</span>
+        </div>
+        <div class="day-timeline" id="day-timeline"></div>
+        <button class="btn-addday" onclick="addDay()">+ Agregar día</button>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="cnum">03b</span><span class="ctit">Tratamiento Intrahospitalario</span><span class="cico">💊</span></div>
+        <div class="fld">
+          <label class="flbl">Fármacos y Procedimientos Principales</label>
+          <textarea class="fta" id="txih" rows="5" placeholder="Ej. Furosemida 40 mg IV c/12h × 5 días&#10;Amoxicilina-clavulanato 1 g IV c/8h × 7 días&#10;Insulina NPH 20 UI SC c/12h&#10;Paracentesis evacuadora 4 L día 3…"></textarea>
+        </div>
+      </div>
+      <div class="nav"><button class="btn bg" onclick="go(1)">← Anterior</button><button class="btn bp" onclick="go(3)">Siguiente →</button></div>
+    </div>
+
+    <!-- PASO 4: Laboratorios — PEGAR -->
+    <div class="step-page" id="s3" style="display:none">
+      <div class="card">
+        <div class="ch"><span class="cnum">04</span><span class="ctit">Laboratorios — Pega los Resultados</span><span class="cico">🧪</span></div>
+        <div class="ai alert" style="margin-bottom:20px">
+          <span style="font-size:16px">📋</span>
+          <span>Copia y pega los resultados <strong>tal como vienen</strong> del sistema o reporte. No importa el formato — Claude los interpreta y genera la tabla comparativa automáticamente.</span>
+        </div>
+        <div class="lab-col-wrap">
+          <div>
+            <div class="lab-section-label">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--warn);display:inline-block;flex-shrink:0"></span>
+              Laboratorios al Ingreso
+            </div>
+            <textarea class="lab-paste-area" id="lab-ing" placeholder="Pega aquí los resultados del ingreso:
+
+Ej:
+Hb 8.2 g/dL
+Leucocitos 14,200 /µL
+Plaquetas 210,000
+Glucosa 312 mg/dL
+Creatinina 2.4
+Na 128 / K 5.3
+TGO 78  TGP 45
+TP 14.2s  INR 1.3
+pH 7.31  Lactato 3.1"></textarea>
+          </div>
+          <div>
+            <div class="lab-section-label">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--suc);display:inline-block;flex-shrink:0"></span>
+              Laboratorios al Egreso
+            </div>
+            <textarea class="lab-paste-area" id="lab-eg" placeholder="Pega aquí los resultados del egreso:
+
+Ej:
+Hb 10.1 g/dL
+Leucocitos 8,400
+Plaquetas 195,000
+Glucosa 142 mg/dL
+Creatinina 1.6
+Na 138 / K 4.2
+TGO 38  TGP 30
+TP 12.1s  INR 1.0
+pH 7.38  Lactato 1.2"></textarea>
+          </div>
+        </div>
+
+        <button class="btn-parse" id="parse-btn" onclick="parseLabs()">
+          <span id="parse-ico">✦</span> Generar vista previa de tabla
+        </button>
+
+        <div class="lab-preview" id="lab-preview" style="display:none">
+          <div class="lab-preview-title">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--suc);display:inline-block"></span>
+            Vista previa — tabla detectada
+          </div>
+          <div style="overflow-x:auto">
+            <table class="preview-tbl">
+              <thead><tr><th>Parámetro</th><th>Referencia</th><th>Ingreso</th><th>Egreso</th><th>Tendencia</th></tr></thead>
+              <tbody id="preview-tbody"></tbody>
+            </table>
+          </div>
+          <div class="as alert" style="margin-top:12px;margin-bottom:0">
+            <span>✓</span>
+            <span style="margin-left:6px;font-size:11px">Esta tabla se incluirá en la nota generada. Puedes editar los resultados pegados arriba y regenerar.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><span class="cnum">04b</span><span class="ctit">Imagen / Gabinete / ECG</span><span class="cico">🩻</span></div>
+        <div class="fld">
+          <textarea class="fta" id="estudios" rows="4" placeholder="Ej. Rx tórax: cardiomegalia grado II, derrame pleural bilateral leve.&#10;Eco cardiaco: FE 35%, hipoquinesia ant. extensa, IT leve.&#10;ECG: BRIHH nuevo en comparación con previo."></textarea>
+        </div>
+      </div>
+      <div class="nav"><button class="btn bg" onclick="go(2)">← Anterior</button><button class="btn bp" onclick="go(4)">Siguiente →</button></div>
+    </div>
+
+    <!-- PASO 5: Eventualidades -->
+    <div class="step-page" id="s4" style="display:none">
+      <div class="card">
+        <div class="ch"><span class="cnum">05</span><span class="ctit">Eventualidades Durante la Hospitalización</span><span class="cico">⚠️</span></div>
+        <div class="aw alert">
+          <span>⚠</span>
+          <span style="margin-left:6px">Incluir: sangrado, deterioro neurológico, sepsis, SICA, PCR, insuf. respiratoria, RAM, caídas, IAAS, complicaciones de procedimientos.</span>
+        </div>
+        <div class="fld">
+          <textarea class="fta" id="event" rows="6" placeholder="Ej. Día 3 (14/01/25): FA con RVR (FC 148 lpm), hemodinámicamente estable. Amiodarona 150 mg IV en bolo. Cardioversión espontánea a RS a las 4h. Sin recurrencia posterior.&#10;&#10;Día 5: LRA estadio 1 KDIGO (Cr 2.8, basal 1.4). Ajuste de diuréticos. Resolución parcial al egreso."></textarea>
+        </div>
+      </div>
+      <div class="nav"><button class="btn bg" onclick="go(3)">← Anterior</button><button class="btn bp" onclick="go(5)">Siguiente →</button></div>
+    </div>
+
+    <!-- PASO 6: PEEA -->
+    <div class="step-page" id="s5" style="display:none">
+      <div class="card">
+        <div class="ch"><span class="cnum">06</span><span class="ctit">PEEA<span class="peea-badge">Plan · Educación · Egreso · Adherencia</span></span></div>
+        <div class="fld" style="margin-bottom:14px">
+          <label class="flbl">Medicamentos al Egreso</label>
+          <textarea class="fta" id="medseg" rows="5" placeholder="Nombre genérico, dosis, vía, frecuencia, duración&#10;Ej. Metoprolol succinato 50 mg VO c/24h indefinido&#10;Furosemida 40 mg VO c/24h × 30 días&#10;Espironolactona 25 mg VO c/24h indefinido&#10;Enoxaparina 60 mg SC c/24h × 10 días"></textarea>
+        </div>
+        <div class="fld" style="margin-bottom:14px">
+          <label class="flbl">Educación al Paciente y Familia</label>
+          <textarea class="fta" id="educ" rows="4" placeholder="Signos de alarma, restricciones dietéticas, actividad física, cuidados específicos…&#10;Ej. Dieta hiposódica <2 g/día, restricción hídrica 1.5 L/día, pesarse diario en ayunas…"></textarea>
+        </div>
+        <div class="g2">
+          <div class="fld">
+            <label class="flbl">Citas de Seguimiento</label>
+            <textarea class="fta" id="citas" rows="3" placeholder="Ej. Cardiología en 2 semanas&#10;Medicina Interna en 1 mes&#10;Nefrología a definir"></textarea>
+          </div>
+          <div class="fld">
+            <label class="flbl">Estudios Ambulatorios Pendientes</label>
+            <textarea class="fta" id="estamb" rows="3" placeholder="Ej. BHC + QS en 2 semanas&#10;Holter 24h en 30 días&#10;Colonoscopia pendiente programar"></textarea>
+          </div>
+        </div>
+        <div class="fld" style="margin-top:14px">
+          <label class="flbl">Criterios de Re-consulta Urgente</label>
+          <textarea class="fta" id="recon" rows="3" placeholder="Ej. Disnea en reposo, dolor torácico, edema agudo, síncope, fiebre >38.5°C, oliguria, sangrado activo…"></textarea>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="cnum">07</span><span class="ctit">Pronóstico y Condición al Egreso</span><span class="cico">📋</span></div>
+        <div class="g2">
+          <div class="fld">
+            <label class="flbl">Pronóstico</label>
+            <input class="fi" id="pronostico" placeholder="Reservado / Bueno / Malo / Muy malo">
+          </div>
+          <div class="fld">
+            <label class="flbl">Condición al Egreso</label>
+            <select class="fsel fi" id="condicion">
+              <option value="">— Seleccionar —</option>
+              <option>Mejoría</option><option>Estable</option><option>Sin cambios</option>
+              <option>Alta voluntaria</option><option>Traslado</option><option>Defunción</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button class="bgen" id="gbtn" onclick="generate()">⚕ &nbsp; Generar Nota de Egreso Completa</button>
+      <div class="nav" style="margin-top:12px"><button class="btn bg" onclick="go(4)">← Anterior</button><div></div></div>
+    </div>
+
+  </div><!-- /vform -->
+
+  <!-- OUTPUT -->
+  <div id="vout" style="display:none">
+    <div id="oempty" class="empty"><div class="eico">📋</div><div class="etxt">Completa los datos y genera la nota</div></div>
+    <div id="oload" class="spin" style="display:none"><span class="spin-ico">⟳</span><div class="spin-txt">Redactando nota de egreso día por día…</div></div>
+    <div id="ores" style="display:none">
+      <div class="owrap">
+        <div class="otoolbar">
+          <span class="otag">Nota Clínica de Egreso · Medicina Interna</span>
+          <button class="bcopy" onclick="copyNota()">Copiar nota</button>
+        </div>
+        <div class="ocont" id="ocont"></div>
+      </div>
+      <button class="btn bg" style="margin-top:14px;width:100%;text-align:center" onclick="showTab('form')">← Editar datos</button>
+    </div>
+  </div>
+</div><!-- /main -->
+
+<script>
+const STEPS=['Paciente','Diagnósticos','Evolución','Laboratorios','Eventualidades','PEEA'];
+let cur=0;
+let days=[{date:'',status:'estable',text:''}];
+let parsedLabRows=[];
+
+const STATUSES=[
+  {val:'estable',   lbl:'Estable',    col:'rgba(104,211,145,.18)', txt:'#68d391'},
+  {val:'mejoria',   lbl:'Mejoría',    col:'rgba(99,179,237,.18)',  txt:'#63b3ed'},
+  {val:'deterioro', lbl:'Deterioro',  col:'rgba(252,129,129,.18)', txt:'#fc8181'},
+  {val:'critico',   lbl:'Crítico',    col:'rgba(252,129,129,.28)', txt:'#fc8181'},
+  {val:'sin-cambio',lbl:'Sin cambio', col:'rgba(113,128,150,.18)', txt:'#a0aec0'},
+];
+
+function gv(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+
+function buildProg(){
+  document.getElementById('prog-row').innerHTML=STEPS.map((l,i)=>
+    `<div class="ps" onclick="go(${i})">
+      <div class="pd ${i<cur?'done':i===cur?'cur':''}">${i<cur?'✓':i+1}</div>
+      <div class="pline ${i<cur?'done':''}"></div>
+      <div class="pl-lbl">${l}</div>
+    </div>`).join('');
+}
+
+function go(n){
+  saveDays();
+  document.getElementById('s'+cur).style.display='none';
+  cur=n;
+  document.getElementById('s'+cur).style.display='block';
+  buildProg();
+  if(n===2) renderTimeline();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showTab(t){
+  const f=t==='form';
+  document.getElementById('vform').style.display=f?'block':'none';
+  document.getElementById('vout').style.display=f?'none':'block';
+  document.getElementById('prog-sec').style.display=f?'block':'none';
+  document.getElementById('tab-form').className='tbtn'+(f?' on':'');
+  document.getElementById('tab-out').className='tbtn'+(!f?' on':'');
+}
+
+/* ── DÍAS ── */
+function saveDays(){
+  const tl=document.getElementById('day-timeline');
+  if(!tl) return;
+  tl.querySelectorAll('.day-entry').forEach((el,i)=>{
+    if(!days[i]) days[i]={date:'',status:'estable',text:''};
+    const d=el.querySelector('.day-date-in');
+    const s=el.querySelector('.day-status-sel');
+    const ta=el.querySelector('.day-textarea');
+    if(d) days[i].date=d.value;
+    if(s) days[i].status=s.value;
+    if(ta) days[i].text=ta.value;
+  });
+}
+
+function addDay(){
+  saveDays();
+  days.push({date:'',status:'estable',text:''});
+  renderTimeline();
+}
+
+function removeDay(i){
+  if(days.length<=1){alert('Debe haber al menos un día de evolución.');return;}
+  saveDays();
+  days.splice(i,1);
+  renderTimeline();
+}
+
+function renderTimeline(){
+  const tl=document.getElementById('day-timeline');
+  if(!tl) return;
+  tl.innerHTML=days.map((d,i)=>{
+    const st=STATUSES.find(s=>s.val===d.status)||STATUSES[0];
+    const so=STATUSES.map(s=>`<option value="${s.val}"${d.status===s.val?' selected':''}>${s.lbl}</option>`).join('');
+    return `<div class="day-entry">
+      <div class="day-left">
+        <div class="day-dot">D${i+1}</div>
+        <div class="day-line-v"></div>
+      </div>
+      <div class="day-right">
+        <div class="day-header">
+          <span class="day-label">Día ${i+1}</span>
+          <input class="day-date-in" type="date" value="${d.date}">
+          <select class="day-status-sel" style="background:${st.col};color:${st.txt};border-color:${st.txt}33">${so}</select>
+          ${days.length>1?`<button class="day-del" onclick="removeDay(${i})">×</button>`:''}
+        </div>
+        <textarea class="day-textarea" rows="4"
+          placeholder="Evolución día ${i+1}: estado general, signos vitales relevantes, hallazgos por sistemas, cambios terapéuticos, plan…"
+        >${d.text||''}</textarea>
+      </div>
+    </div>`;
+  }).join('');
+
+  tl.querySelectorAll('.day-status-sel').forEach(sel=>{
+    sel.addEventListener('change',function(){
+      const st=STATUSES.find(s=>s.val===this.value)||STATUSES[0];
+      this.style.background=st.col;
+      this.style.color=st.txt;
+      this.style.borderColor=st.txt+'33';
+    });
+  });
+}
+
+function getDaysSummary(){
+  saveDays();
+  return days.map((d,i)=>{
+    const st=STATUSES.find(s=>s.val===d.status)||STATUSES[0];
+    return `DÍA ${i+1}${d.date?' ('+d.date+')':''} — Estado: ${st.lbl}\n${d.text||'Sin descripción registrada.'}`;
+  }).join('\n\n');
+}
+
+/* ── PARSER DE LABS ── */
+async function parseLabs(){
+  const ing=gv('lab-ing');
+  const eg=gv('lab-eg');
+  if(!ing&&!eg){alert('Pega al menos los resultados del ingreso.');return;}
+
+  const btn=document.getElementById('parse-btn');
+  const ico=document.getElementById('parse-ico');
+  btn.disabled=true;
+  ico.className='parse-spin';
+  ico.textContent='⟳';
+
+  const prompt=`Eres un experto en interpretación de laboratorio clínico.
+
+Recibirás resultados de laboratorio al INGRESO y al EGRESO en cualquier formato (texto libre, pegado de sistema, valores sueltos, con o sin unidades, con abreviaturas).
+
+Tu tarea:
+1. Identifica TODOS los parámetros presentes en cualquiera de los dos momentos.
+2. Devuelve ÚNICAMENTE un array JSON válido, sin markdown, sin explicaciones, sin texto adicional.
+3. Cada elemento del array debe tener exactamente esta estructura:
+   {"param":"Nombre del parámetro","ref":"Valor de referencia estándar con unidades","ing":"Valor al ingreso o — si no disponible","eg":"Valor al egreso o — si no disponible","trend":"↑ si subió / ↓ si bajó / → si igual o sin cambio clínico / — si solo hay un valor"}
+4. Para "trend": compara numéricamente ingreso vs egreso cuando sea posible.
+5. Incluye parámetros de: BHC, química sanguínea, electrolitos, función hepática, coagulación, gasometría, reactantes de fase aguda, cultivos si aplica.
+
+LABORATORIOS AL INGRESO:
+${ing||'No proporcionados'}
+
+LABORATORIOS AL EGRESO:
+${eg||'No proporcionados'}`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:2000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content?.map(b=>b.text||'').join('')||'[]';
+    const clean=raw.replace(/```json|```/g,'').trim();
+    parsedLabRows=JSON.parse(clean);
+    renderPreview(parsedLabRows);
+  }catch(e){
+    alert('Error al procesar laboratorios: '+e.message);
+  }
+
+  btn.disabled=false;
+  ico.className='';
+  ico.textContent='✦';
+}
+
+function renderPreview(rows){
+  if(!rows.length) return;
+  const tbody=document.getElementById('preview-tbody');
+  tbody.innerHTML=rows.map(r=>{
+    const tColor=r.trend==='↑'?'var(--dan)':r.trend==='↓'?'var(--warn)':'var(--mut)';
+    const ingColor=r.ing!=='—'?'var(--warn)':'var(--mut)';
+    const egColor=r.eg!=='—'?'var(--suc)':'var(--mut)';
+    return `<tr>
+      <td style="color:var(--lbl);font-weight:600">${r.param}</td>
+      <td style="color:var(--mut);font-size:11px">${r.ref}</td>
+      <td style="color:${ingColor}">${r.ing}</td>
+      <td style="color:${egColor}">${r.eg}</td>
+      <td style="color:${tColor};font-size:16px;text-align:center">${r.trend}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('lab-preview').style.display='block';
+}
+
+/* ── GENERAR NOTA ── */
+const SYS=`Eres un médico internista de tercer nivel con dominio experto en redacción de notas clínicas de egreso. Genera una NOTA DE EGRESO completa, estructurada y de alto nivel para el Servicio de Medicina Interna.
+
+ESTRUCTURA OBLIGATORIA:
+
+## 1. DATOS DE IDENTIFICACIÓN
+Nombre, edad, sexo, expediente, servicio, fechas ingreso/egreso, días totales de estancia, médico tratante, cédula.
+
+## 2. DIAGNÓSTICOS DE EGRESO
+Lista priorizada con CIE-10. Diagnóstico principal primero, luego secundarios y comorbilidades activas.
+
+## 3. MOTIVO DE INGRESO
+3-4 líneas: síntoma principal, tiempo de evolución, contexto de ingreso.
+
+## 4. EVOLUCIÓN INTRAHOSPITALARIA
+CRÍTICO: Redacta DÍA POR DÍA con este formato exacto:
+
+### Día N — [Fecha si disponible] — Estado: [Estable/Mejoría/Deterioro/Crítico]
+Narrativa clínica completa: estado general, signos vitales relevantes, hallazgos por sistemas, cambios terapéuticos, respuesta al tratamiento, procedimientos, interconsultas, plan del día.
+
+Al final de todos los días, agrega:
+### Resumen de la Estancia
+Párrafo con el hilo conductor clínico general de la hospitalización.
+
+## 5. RESULTADOS DE LABORATORIO Y GABINETE
+Si recibes los laboratorios como JSON estructurado, genera una tabla Markdown con columnas: Parámetro | Referencia | Al Ingreso | Al Egreso | Tendencia.
+Señala con **negrita** los valores críticos fuera de rango.
+Agrega una interpretación clínica breve de los hallazgos más relevantes.
+Incluye los hallazgos de imagen, gabinete y ECG.
+
+## 6. EVENTUALIDADES DURANTE LA HOSPITALIZACIÓN
+Por evento: fecha, descripción clínica completa, manejo y desenlace. Si no hubo: "Sin eventualidades durante la estancia."
+
+## 7. TRATAMIENTO INTRAHOSPITALARIO
+Fármacos con nombre genérico, dosis, vía, frecuencia, duración. Procedimientos terapéuticos.
+
+## 8. PLAN DE EGRESO · EDUCACIÓN · ADHERENCIA (PEEA)
+### 8a. Medicamentos al Egreso
+Lista con nombre genérico, dosis, vía, frecuencia, duración exacta. Señalar **ALTO RIESGO** en negrita.
+### 8b. Educación al Paciente y Familia
+Signos de alarma específicos. Restricciones dietéticas/actividad. Cuidados especiales.
+### 8c. Adherencia Farmacológica
+Importancia del apego. Estrategias prácticas para el paciente.
+### 8d. Citas de Seguimiento
+Servicio, especialidad, tiempo aproximado.
+### 8e. Estudios Ambulatorios Pendientes
+Con fecha sugerida.
+### 8f. Criterios de Re-consulta Urgente
+Síntomas específicos que requieren regresar a urgencias.
+
+## 9. PRONÓSTICO
+Vital, funcional y de la enfermedad de fondo. Breve y fundamentado.
+
+## 10. CONDICIÓN AL EGRESO
+Estado clínico al alta. Escala funcional resumida si aplica (Karnofsky o Barthel).
+
+## 11. FIRMA
+Médico tratante, cédula, servicio, fecha.
+
+REGLAS ABSOLUTAS:
+- Lenguaje médico formal y sin ambigüedades.
+- Si falta un dato escribe [Dato no proporcionado].
+- Usa **negrita** para hallazgos críticos y medicamentos de alto riesgo.
+- Responde ÚNICAMENTE la nota, sin texto introductorio ni comentarios adicionales.`;
+
+async function generate(){
+  saveDays();
+  const btn=document.getElementById('gbtn');
+  btn.disabled=true;
+  btn.textContent='⟳  Generando…';
+  showTab('output');
+  document.getElementById('oempty').style.display='none';
+  document.getElementById('oload').style.display='block';
+  document.getElementById('ores').style.display='none';
+
+  const labSection = parsedLabRows.length
+    ? `LABORATORIOS (JSON estructurado — genera tabla Markdown comparativa con estos datos):\n${JSON.stringify(parsedLabRows)}`
+    : `LABORATORIOS AL INGRESO (texto libre — extrae y tabula):\n${gv('lab-ing')||'No proporcionados'}\n\nLABORATORIOS AL EGRESO (texto libre — extrae y tabula):\n${gv('lab-eg')||'No proporcionados'}`;
+
+  const msg=`PACIENTE: ${gv('nombre')||'No especificado'} | ${gv('edad')||'—'} | ${gv('sexo')||'—'}
+Expediente: ${gv('exp')||'—'} | Servicio: ${gv('servicio')||'Medicina Interna'}
+Ingreso: ${gv('fing')||'—'} | Egreso: ${gv('feg')||'—'}
+Médico: ${gv('medico')||'—'} | Cédula: ${gv('cedula')||'—'}
+
+DX PRINCIPAL: ${gv('dxp')||'No especificado'}
+SECUNDARIOS: ${gv('dxs')||'Ninguno'}
+MOTIVO INGRESO: ${gv('motivo')||'No especificado'}
+
+EVOLUCIÓN DÍA POR DÍA:
+${getDaysSummary()}
+
+TRATAMIENTO INTRAHOSPITALARIO: ${gv('txih')||'No especificado'}
+
+${labSection}
+
+ESTUDIOS IMAGEN / GABINETE / ECG: ${gv('estudios')||'No especificados'}
+
+EVENTUALIDADES: ${gv('event')||'Sin eventualidades referidas'}
+
+MEDICAMENTOS AL EGRESO: ${gv('medseg')||'No especificados'}
+EDUCACIÓN AL PACIENTE: ${gv('educ')||'No especificada'}
+CITAS DE SEGUIMIENTO: ${gv('citas')||'No especificadas'}
+ESTUDIOS AMBULATORIOS PENDIENTES: ${gv('estamb')||'Ninguno'}
+CRITERIOS DE RECONSULTA URGENTE: ${gv('recon')||'No especificados'}
+PRONÓSTICO: ${gv('pronostico')||'No especificado'}
+CONDICIÓN AL EGRESO: ${gv('condicion')||'No especificada'}`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:5000,
+        system:SYS,
+        messages:[{role:'user',content:msg}]
+      })
+    });
+    const data=await res.json();
+    renderOut(data.content?.map(b=>b.text||'').join('')||'Error al generar la nota.');
+  }catch(e){
+    renderOut('Error de conexión: '+e.message);
+  }
+
+  btn.disabled=false;
+  btn.textContent='⚕  Generar Nota de Egreso Completa';
+}
+
+function renderOut(md){
+  document.getElementById('oload').style.display='none';
+  document.getElementById('ores').style.display='block';
+  document.getElementById('ocont').innerHTML=parseMD(md);
+  window._raw=md;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function parseMD(text){
+  const lines=text.split('\n');
+  let html='',inUl=false,inTable=false,tLines=[];
+
+  function flushTbl(){
+    if(!tLines.length) return;
+    const rows=tLines.map(l=>l.split('|').filter((_,i,a)=>i>0&&i<a.length-1).map(c=>c.trim()));
+    if(rows.length<2){html+=tLines.join('<br>');tLines=[];inTable=false;return;}
+    const h=rows[0], b=rows.slice(2);
+    html+='<table><thead><tr>'+h.map(x=>`<th>${il(x)}</th>`).join('')+'</tr></thead><tbody>';
+    b.forEach(r=>{html+='<tr>'+r.map(c=>`<td>${il(c)}</td>`).join('')+'</tr>';});
+    html+='</tbody></table>';
+    tLines=[];inTable=false;
+  }
+
+  lines.forEach(line=>{
+    if(line.startsWith('|')){
+      if(!inTable){if(inUl){html+='</ul>';inUl=false;}inTable=true;}
+      tLines.push(line);return;
+    }
+    if(inTable) flushTbl();
+    if(line.startsWith('#### ')){if(inUl){html+='</ul>';inUl=false;}html+=`<h4>${il(line.slice(5))}</h4>`;}
+    else if(line.startsWith('### ')){
+      if(inUl){html+='</ul>';inUl=false;}
+      const t=line.slice(4);
+      html+=t.match(/^D[ií]a\s+\d+/i)
+        ?`<div class="dia-blk"><h3 style="color:var(--warn)">${il(t)}</h3>`
+        :`<h3>${il(t)}</h3>`;
+    }
+    else if(line.startsWith('## ')){if(inUl){html+='</ul>';inUl=false;}html+=`<h2>${il(line.slice(3))}</h2>`;}
+    else if(line.startsWith('# ')){if(inUl){html+='</ul>';inUl=false;}html+=`<h2 style="font-size:16px">${il(line.slice(2))}</h2>`;}
+    else if(line.match(/^[-*] /)){if(!inUl){html+='<ul>';inUl=true;}html+=`<li>${il(line.slice(2))}</li>`;}
+    else if(line.trim()===''){if(inUl){html+='</ul>';inUl=false;}html+='<div style="height:5px"></div>';}
+    else{if(inUl){html+='</ul>';inUl=false;}html+=`<p>${il(line)}</p>`;}
+  });
+  if(inTable) flushTbl();
+  if(inUl) html+='</ul>';
+  return html;
+}
+
+function il(t){
+  return t
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g,'<em>$1</em>');
+}
+
+function copyNota(){
+  if(window._raw) navigator.clipboard.writeText(window._raw).catch(()=>{});
+}
+
+buildProg();
+renderTimeline();
+</script>
+</body>
+</html>
